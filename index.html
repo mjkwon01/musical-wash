@@ -1,0 +1,3319 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>DID 계획점검</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg: #E7EBF7;
+      --surface: #011200;
+      --surface2: #FFFFFF;
+      --surface3: #B5D8FA;
+      --border: #AAB9BF;
+      --accent: #FF5C00;
+      --accent2: #010221;
+      --ok: #2ecc71;
+      --ng: #e74c3c;
+      --warn: #DB8D0F;
+      --text: #000000;
+      --text2: #FFFFFF;
+      --text3: #5a5f7a;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      color: var(--text2);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── 헤더 ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text2);
+    }
+
+    .header-title span {
+      color: var(--accent);
+    }
+
+    /* ── 탭 ── */
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 56px;
+      z-index: 99;
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px 4px;
+      border: none;
+      background: none;
+      color: var(--text3);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* ── 메인 콘텐츠 ── */
+    .main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* ── 섹션 ── */
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--text2);
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    /* ── 장소 선택 ── */
+    .location-group {
+      margin-bottom: 20px;
+    }
+
+    .location-group-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--surface);
+      letter-spacing: 0.3px;
+      padding: 10px 4px;
+      margin-bottom: 2px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .location-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .location-btn {
+      background: var(--surface2);
+      border: 1px solid var(--surface);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      line-height: 1.3;
+    }
+
+    .location-btn:hover,
+    .location-btn.selected {
+      border-color: var(--surface);
+      background: rgba(253, 152, 0, 0.555);
+      color: var(--surface);
+    }
+
+    /* ── 점검자 입력 ── */
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .input-label {
+      font-size: 13px;
+      color: var(--text2);
+      white-space: nowrap;
+      min-width: 48px;
+    }
+
+    .input-field {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    /* ── 점검 시작 버튼 ── */
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      color: #fff;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      letter-spacing: -0.3px;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── 점검 시작 버튼 고정 영역 ── */
+    .start-area {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+
+      /* 1. 부모(.main)의 패딩 16px을 무력화하기 위해 음수 마진 적용 */
+      margin-left: -16px;
+      margin-right: -16px;
+      margin-bottom: -16px;
+
+      /* 2. 늘어난 마진만큼 너비를 계산 (부모 패딩 16px * 2) */
+      width: calc(100% + 32px);
+
+      /* 3. 내부 여백 조절 (아래쪽은 기기별 Safe Area를 고려해 넉넉히) */
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+
+    .start-area .btn-primary {
+      width: 100%;
+      max-width: 500px;
+    }
+
+    /* ── 점검 화면 ── */
+    .inspect-header {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .inspect-location-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .inspect-location {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text2);
+    }
+
+    .total-count-badge {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--accent);
+    }
+
+    .inspect-meta-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .inspect-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .inspect-meta {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    /* 하단 요약 박스 (비고정형) */
+    .inspect-summary-box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    .summary-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .summary-label {
+      color: var(--text2);
+    }
+
+    .summary-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .summary-val.ng {
+      color: var(--ng);
+    }
+
+    /* ── 장비 그룹 ── */
+    .equipment-group {
+      margin-bottom: 12px;
+    }
+
+    .equipment-name,
+    .env-section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .equipment-name:hover {
+      background: rgba(242, 203, 5, 0.178);
+    }
+
+    .env-section-title:hover {
+      background: rgba(243, 156, 18, 0.12);
+    }
+
+    .equipment-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.5px;
+      padding: 8px 12px;
+      background: rgba(242, 203, 5, 0.178);
+      border-left: 3px solid var(--accent2);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      user-select: none;
+    }
+
+    /* 그룹 활성화 토글 스타일 */
+    .group-header-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(242, 203, 5, 0.178);
+      border-radius: 4px;
+      margin-bottom: 4px;
+      padding-right: 12px;
+    }
+
+    .equipment-name {
+      flex: 1;
+      margin-bottom: 0;
+      background: none;
+      border-radius: 0;
+    }
+
+    .group-toggle-input {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent);
+    }
+
+    .equipment-group.disabled {
+      opacity: 0.4;
+      filter: grayscale(1);
+    }
+
+    .equipment-group.disabled .eq-items-container {
+      pointer-events: none;
+    }
+
+    /* 아코디언 화살표 */
+    .equipment-name::after,
+    .env-section-title::after {
+      content: '▼';
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+
+    .equipment-group.collapsed .equipment-name::after,
+    .equipment-group.collapsed .env-section-title::after {
+      transform: rotate(-90deg);
+    }
+
+    /* 접힘 상태 제어 */
+    .equipment-group.collapsed .eq-items-container {
+      display: none;
+    }
+
+    .accordion-close-wrap {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0 4px;
+    }
+
+    .accordion-close-btn {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .accordion-close-btn:hover {
+      border-color: var(--accent);
+      background: rgba(43, 244, 97, 0.14);
+    }
+
+    /* ── 점검 항목 ── */
+    .check-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+
+    .check-item.result-ok {
+      border-color: var(--border);
+    }
+
+    .check-item.result-ng {
+      border-color: rgba(231, 76, 60, 0.3);
+    }
+
+    .check-item-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .check-item-info {
+      flex: 1;
+    }
+
+    .check-item-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text2);
+      margin-bottom: 2px;
+    }
+
+    .check-item-desc {
+      font-size: 11px;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    .check-item-qty {
+      font-size: 11px;
+      color: var(--text3);
+      white-space: nowrap;
+    }
+
+    .check-btns {
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .check-btn {
+      width: 42px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .check-btn.ok-active {
+      background: rgba(46, 204, 113, 0.15);
+      border-color: var(--ok);
+      color: var(--ok);
+    }
+
+    .check-btn.ng-active {
+      background: rgba(231, 76, 60, 0.15);
+      border-color: var(--ng);
+      color: var(--ng);
+    }
+
+    /* 광 신호 측정 전용 카드 */
+    .optical-pair-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      color: var(--text2);
+      transition: border-color 0.2s;
+    }
+
+    .optical-pair-card.result-ng {
+      border-color: rgba(231, 76, 60, 0.3);
+    }
+
+    .optical-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .optical-title {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--text2);
+      margin-bottom: 2px;
+    }
+
+    .optical-range {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text3);
+      line-height: 1.4;
+    }
+
+    .optical-ng-btn {
+      width: 42px;
+      height: 38px;
+      flex-shrink: 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text3);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .optical-ng-btn.ng-active {
+      background: rgba(231, 76, 60, 0.15);
+      border-color: var(--ng);
+      color: var(--ng);
+    }
+
+    .optical-input-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      align-items: center;
+      gap: 8px;
+    }
+
+    .optical-measure-side {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+    }
+
+    .optical-table-label {
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      min-width: 68px;
+      max-width: calc(100% - 48px);
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .optical-measure-item {
+      flex: 1;
+      min-width: 0;
+      padding: 0;
+      margin-bottom: 0;
+      border: none;
+      background: transparent;
+    }
+
+    .optical-value-wrap {
+      display: flex;
+      align-items: center;
+      min-width: 42px;
+      height: 38px;
+      background: #12141c;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+
+    .optical-minus-prefix {
+      width: 18px;
+      flex-shrink: 0;
+      color: var(--text2);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: right;
+      pointer-events: none;
+    }
+
+    .optical-measure-input {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      color: var(--text2);
+      font-size: 14px;
+      text-align: center;
+      padding: 0 8px 0 4px;
+      outline: none;
+    }
+
+    .optical-value-wrap:focus-within {
+      border-color: var(--accent);
+    }
+
+    .optical-pair-card .memo-input {
+      margin-top: 10px;
+    }
+
+    .optical-pair-card.result-ng .memo-input {
+      display: block;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @media (max-width: 520px) {
+      .optical-pair-card {
+        padding: 10px 12px;
+      }
+
+      .optical-card-header {
+        margin-bottom: 10px;
+      }
+
+      .optical-title {
+        font-size: 13px;
+      }
+
+      .optical-range {
+        font-size: 11px;
+      }
+
+      .optical-ng-btn {
+        width: 42px;
+        height: 38px;
+        font-size: 14px;
+      }
+
+      .optical-input-row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 6px;
+      }
+
+      .optical-measure-side {
+        gap: 4px;
+      }
+
+      .optical-table-label {
+        font-size: 12px;
+        min-width: 62px;
+        max-width: calc(100% - 42px);
+      }
+
+      .optical-measure-input {
+        height: 100%;
+        font-size: 13px;
+        padding: 0 6px;
+      }
+
+      .optical-value-wrap {
+        min-width: 38px;
+        height: 36px;
+      }
+
+      .optical-minus-prefix {
+        width: 16px;
+        font-size: 13px;
+      }
+    }
+
+    .memo-input {
+      width: 100%;
+      background: #12141c;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      resize: none;
+      min-height: 44px;
+      margin-top: 10px;
+      display: none;
+      /* 기본 숨김 */
+    }
+
+    /* 부적합(NG) 상태일 때 메모창 표시 */
+    .result-ng .memo-input {
+      display: block;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .memo-input:focus {
+      border-color: var(--accent);
+      min-height: 60px;
+    }
+
+    .memo-input::placeholder {
+      color: var(--text3);
+    }
+
+    /* ── 환경정리 섹션 ── */
+    .env-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--warn);
+      letter-spacing: 0.5px;
+      padding: 8px 12px;
+      background: rgba(243, 156, 18, 0.2);
+      border-left: 3px solid var(--warn);
+      border-radius: 4px;
+      margin-bottom: 4px;
+    }
+
+    /* ── 저장 및 시작 버튼 공통 고정 영역 ── */
+    #step-inspect, #step-select {
+      display: flex;
+      flex-direction: column;
+      min-height: calc(100vh - 140px); /* 헤더 + 탭 높이 제외 */
+    }
+
+    #step-inspect #checklist-body, #step-select #location-list {
+      flex: 1;
+    }
+
+    #step-inspect #checklist-body {
+      flex: 1;
+    }
+
+    .save-area {
+      position: sticky;
+      bottom: 0;
+      background: var(--surface);
+
+      /* 1. 부모(.main)의 패딩 16px을 무력화 */
+      margin-left: -16px;
+      margin-right: -16px;
+      margin-bottom: -16px;
+      width: calc(100% + 32px);
+
+      /* 2. 내부 여백: 상단과 양옆 여백을 주고, 하단은 Safe Area 대응 */
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+
+      /* 3. 기존 레이아웃 속성 유지 */
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 10;
+    }
+
+    .save-area .btn-primary,
+    .save-area .btn-secondary {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .save-status {
+      margin-bottom: 0px;
+      /* 불필요한 마진 제거 */
+      min-height: 0px;
+      /* 메시지 없을 때 공간 차지 방지 */
+      font-size: 12px;
+    }
+
+    .save-status.saving {
+      color: var(--accent);
+    }
+
+    .save-status.saved {
+      color: var(--ok);
+    }
+
+    .save-status.error {
+      color: var(--ng);
+    }
+
+    /* ── 히스토리 ── */
+    .history-filter {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .filter-select {
+      flex: 1;
+      min-width: 120px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+    }
+
+    .history-record {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .history-record:hover {
+      border-color: var(--accent);
+    }
+
+    .history-record-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+
+    .history-location {
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .history-date {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .history-meta {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .history-stats {
+      display: flex;
+      gap: 8px;
+    }
+
+    .stat-badge {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .stat-ok {
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--ok);
+    }
+
+    .stat-ng {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--ng);
+    }
+
+    .stat-memo {
+      background: rgba(243, 156, 18, 0.12);
+      color: var(--warn);
+    }
+
+    .stat-measure {
+      /* v1.0.4 신규: 히스토리에서 광 신호 측정 포함 여부를 구분합니다. 배경/글자색 모두 연한 파란색 계열로 추가했습니다. */
+      background: rgba(79, 142, 247, 0.14);
+      color: #4F8EF7;
+    }
+
+    /* ── 상세보기 모달 ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 200;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.open {
+      display: flex;
+      align-items: flex-end;
+    }
+
+    .modal {
+      width: 100%;
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--border);
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 20px 16px 32px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text2);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .modal-meta {
+      font-size: 12px;
+      color: var(--text3);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .modal-item-text {
+      flex: 1;
+    }
+
+    .modal-item-name {
+      font-size: 13px;
+    }
+
+    .modal-item-memo {
+      font-size: 11px;
+      color: var(--warn);
+      margin-top: 3px;
+    }
+
+    .result-badge {
+      font-size: 13px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    .result-ok-badge {
+      background: rgba(46, 204, 113, 0.12);
+      color: var(--ok);
+    }
+
+    .result-ng-badge {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--ng);
+    }
+
+    .result-skip-badge {
+      background: rgba(90, 95, 122, 0.2);
+      color: var(--text3);
+    }
+
+    /* ── 검색 ── */
+    .search-input {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--text2);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+
+    .search-filter-row {
+      /* 검색 필터 3개를 한 줄에 맞추기 위해 flex 2열 구조에서 grid 3열 구조로 변경 */
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      /* 필터 간격: 8px에서 6px로 축소 */
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .search-filter-row .filter-select {
+      /* 모바일 한 줄 배치를 위해 기본 min-width 120px을 0으로 재정의 */
+      width: 100%;
+      min-width: 0;
+      /* 필터 내부 여백: 10px 12px에서 9px 8px로 축소 */
+      padding: 9px 8px;
+      /* 필터 글자 크기: 13px에서 12px로 축소 */
+      font-size: 12px;
+    }
+
+    #search-filter-period {
+      /* 기간 필터도 장소/장비 필터와 같은 폭으로 표시 */
+      min-width: 0;
+    }
+
+    .search-result {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .search-result-top {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .search-loc {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .search-date {
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .search-item-name {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .search-memo {
+      font-size: 12px;
+      color: var(--warn);
+      padding: 6px 10px;
+      background: rgba(243, 156, 18, 0.06);
+      border-left: 2px solid var(--warn);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .highlight {
+      background: rgba(79, 142, 247, 0.25);
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* ── 설정 ── */
+    .setting-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 10px;
+    }
+
+    .setting-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: var(--accent);
+    }
+
+    .setting-desc {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+
+    .settings-admin-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+
+    .settings-admin-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--surface);
+      letter-spacing: 0.3px;
+    }
+
+    .settings-lock-btn {
+      padding: 6px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--surface);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .settings-lock-btn:hover {
+      border-color: var(--surface);
+    }
+
+    .setting-input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      color: var(--text);
+      font-size: 12px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .setting-input:focus {
+      border-color: var(--border);
+    }
+
+    .admin-summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 14px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    .admin-summary-item {
+      min-width: 0;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .admin-summary-item:nth-last-child(-n + 2) {
+      border-bottom: none;
+    }
+
+    .admin-summary-label {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+
+    .admin-summary-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text2);
+      line-height: 1.2;
+      word-break: keep-all;
+    }
+
+    .admin-status-list {
+      display: flex;
+      flex-direction: column;
+      border-top: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .admin-status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 12px;
+    }
+
+    .admin-status-name {
+      flex: 0 0 auto;
+      color: var(--text3);
+    }
+
+    .admin-status-value {
+      min-width: 0;
+      color: var(--text2);
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    .btn-secondary {
+      padding: 10px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: border-color 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .btn-secondary.no-color-change:hover,
+    .btn-secondary.no-color-change:focus,
+    .btn-secondary.no-color-change:active {
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text3);
+      font-size: 13px;
+    }
+
+    .empty-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+
+    /* ── 대시보드 ── */
+    .period-filter {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .period-btn {
+      flex: 1;
+      padding: 8px 4px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text3);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .period-btn.active {
+      background: rgba(79, 142, 247, 0.12);
+      border-color: var(--text3);
+      color: var(--text3);
+    }
+
+    .dash-sec-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .dash-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .dash-card.clickable {
+      cursor: pointer;
+    }
+
+    .dash-card.ng-left {
+      border-left: 3px solid var(--ng);
+    }
+
+    .dash-card.warn-left {
+      border-left: 3px solid var(--warn);
+    }
+
+    .dash-card.is-open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom-color: transparent;
+      margin-bottom: 0;
+    }
+
+    .dash-card-title {
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .dash-card-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .dash-num {
+      font-size: 30px;
+      font-weight: 600;
+    }
+
+    .dash-num.blue {
+      color: rgba(43, 244, 97, 1);
+    }
+
+    .dash-num.red {
+      color: var(--ng);
+    }
+
+    .dash-num.warn {
+      color: var(--warn);
+    }
+
+    .dash-arrow {
+      font-size: 16px;
+      color: var(--text3);
+      margin-left: 6px;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+
+    .dash-arrow.rotated {
+      transform: rotate(90deg);
+    }
+
+    .dash-list {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      overflow: hidden;
+      margin-bottom: 10px;
+    }
+
+    .dash-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+    }
+
+    .dash-list-item:last-child {
+      border-bottom: none;
+    }
+
+    .dash-list-name {
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .dash-list-sub {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .dash-badge {
+      padding: 3px 7px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .dash-badge-ng {
+      background: rgba(231, 76, 60, 0.12);
+      color: var(--ng);
+    }
+
+    .dash-badge-warn {
+      background: rgba(243, 156, 18, 0.12);
+      color: var(--warn);
+    }
+
+    .dash-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 16px 0;
+    }
+
+    .dash-empty {
+      text-align: center;
+      padding: 16px;
+      color: var(--text3);
+      font-size: 13px;
+    }
+
+    .dash-loading {
+      text-align: center;
+      padding: 40px 16px;
+      color: var(--text3);
+      font-size: 14px;
+    }
+
+    .bar-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .bar-loc {
+      font-size: 12px;
+      color: var(--surface);
+      width: 100px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--surface2);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 4px;
+    }
+
+    .bar-fill.high {
+      background: var(--ng);
+    }
+
+    .bar-fill.mid {
+      background: var(--warn);
+    }
+
+    .bar-fill.low {
+      background: var(--accent);
+    }
+
+    .bar-fill.zero {
+      background: var(--border);
+    }
+
+    .bar-pct {
+      font-size: 11px;
+      color: var(--text3);
+      width: 34px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .bar-icon {
+      font-size: 12px;
+      width: 14px;
+      flex-shrink: 0;
+    }
+
+    .optical-trend-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
+
+    .optical-trend-card.warn {
+      border-left: 3px solid var(--warn);
+    }
+
+    .optical-trend-card.dead {
+      border-left: 3px solid var(--ng);
+    }
+
+    .optical-filter-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 0 0 8px;
+      margin-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .optical-filter-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .optical-filter-chip {
+      flex: 0 0 auto;
+      max-width: 160px;
+      padding: 7px 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+
+    .optical-filter-chip.active {
+      /* v3.6.2 변경: 광 신호 장소 필터 선택 색상을 기간 필터와 동일한 어두운 글자색으로 맞췄습니다. */
+      border-color: var(--text3);
+      background: rgba(79, 142, 247, 0.12);
+      color: var(--text3);
+    }
+
+    .optical-trend-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .optical-trend-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text2);
+      line-height: 1.35;
+    }
+
+    .optical-trend-sub {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .optical-latest {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: var(--text2);
+    }
+
+    .optical-latest span {
+      padding: 3px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      white-space: nowrap;
+    }
+
+    .optical-dead-badge {
+      padding: 3px 7px;
+      border-radius: 4px;
+      background: rgba(231, 76, 60, 0.16);
+      color: var(--ng);
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .optical-dead-empty {
+      min-width: 72px;
+      min-height: 20px;
+    }
+
+    .optical-chart {
+      width: 100%;
+      height: 86px;
+      display: block;
+      background: #12141c;
+      border: 1px solid rgba(170, 185, 191, 0.35);
+      border-radius: var(--radius-sm);
+    }
+
+    .optical-legend {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-top: 7px;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .optical-legend-lines {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .optical-legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .optical-line-dot {
+      width: 14px;
+      height: 3px;
+      border-radius: 2px;
+      display: inline-block;
+    }
+
+    .optical-line-up {
+      background: var(--accent);
+    }
+
+    .optical-line-down {
+      background: var(--surface3);
+    }
+
+    .repeat-box {
+      background: rgba(231, 76, 60, 0.05);
+      border: 1px solid rgba(231, 76, 60, 0.2);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .repeat-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ng);
+      margin-bottom: 8px;
+    }
+
+    .repeat-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(231, 76, 60, 0.1);
+      gap: 8px;
+    }
+
+    .repeat-item:last-child {
+      border-bottom: none;
+    }
+
+    .repeat-name {
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .repeat-loc {
+      font-size: 12px;
+      color: var(--text3);
+      margin-top: 2px;
+    }
+
+    .repeat-cnt {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ng);
+      background: rgba(231, 76, 60, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .unchecked-box {
+      background: rgba(90, 95, 122, 0.2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .unchecked-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .unchecked-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text3);
+    }
+
+    .unchecked-item:last-child {
+      border-bottom: none;
+    }
+
+    .unchecked-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text3);
+      flex-shrink: 0;
+    }
+
+    /* ── 앱 로딩 ── */
+    #app-loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--surface2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-msg {
+      font-size: 14px;
+      color: var(--text);
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body onload="initApp()">
+
+  <!-- 전체 로딩 오버레이 -->
+  <div id="app-loading">
+    <div class="spinner"></div>
+    <div class="loading-msg">시스템 정보를 불러오는 중…</div>
+  </div>
+
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-title">DID <span>계획점검</span> <span
+          style="font-size:11px;font-weight:400;color:var(--text3);letter-spacing:0;" id="appVersionDisplay"></span>
+      </div>
+      <div style="font-size:11px; color:var(--text3); font-family:'JetBrains Mono',monospace" id="headerDate"></div>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div style="max-width:640px;margin:0 auto;">
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('inspect')">점검</button>
+      <button class="tab-btn" onclick="showTab('history')">히스토리</button>
+      <button class="tab-btn" onclick="showTab('search')">검색</button>
+      <button class="tab-btn" onclick="showTab('dashboard')">대시보드</button>
+      <button class="tab-btn" onclick="showSettings()">설정</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- ══════════════ 점검 탭 ══════════════ -->
+    <div class="section active" id="sec-inspect">
+
+      <!-- 장소 선택 화면 -->
+      <div id="step-select">
+        <div class="card">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div style="font-size:13px;font-weight:700;color:var(--text2);white-space:nowrap;">점검자</div>
+            <input class="input-field" id="inspector-name" placeholder="이름을 입력하세요" style="flex:1;" />
+          </div>
+        </div>
+
+        <div id="location-list"></div>
+
+        <div class="start-area">
+          <button class="btn-primary" id="btn-start" disabled onclick="startInspection()">
+            점검 시작 →
+          </button>
+        </div>
+      </div>
+
+      <!-- 점검 진행 화면 -->
+      <div id="step-inspect" style="display:none;">
+        <div class="inspect-header">
+          <div class="inspect-location-row">
+            <div class="inspect-location" id="cur-location"></div>
+            <div class="total-count-badge" id="total-count"></div>
+          </div>
+          <div class="inspect-meta-bar">
+            <div class="inspect-meta-item">점검자: <span id="cur-inspector" style="color:var(--text2)">-</span></div>
+            <div class="inspect-meta-item">최근 점검일: <span id="recent-date" style="color:var(--text2)">-</span></div>
+          </div>
+        </div>
+
+        <div id="checklist-body"></div>
+
+        <!-- 하단 요약 정보 (비고정형, 스크롤 하단에서만 보임) -->
+        <div class="inspect-summary-box" id="bottom-summary">
+          <div class="summary-text" id="summary-text"></div>
+        </div>
+
+        <div class="save-area">
+          <div class="save-status" id="save-status"></div>
+          <button class="btn-primary" id="btn-save" onclick="saveResult()">데이터 저장</button>
+          <button class="btn-secondary" style="margin-top:8px;" onclick="backToSelect()">← 장소 선택 돌아가기</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ══════════════ 히스토리 탭 ══════════════ -->
+    <div class="section" id="sec-history">
+      <div class="history-filter">
+        <select class="filter-select" id="history-filter-loc" onchange="renderHistory()">
+          <option value="">모든 장소</option>
+        </select>
+        <select class="filter-select" id="history-filter-result" onchange="renderHistory()">
+          <option value="">전체 기록</option>
+          <option value="ng">X 포함</option>
+          <option value="memo">특이사항 있음</option>
+        </select>
+        <select class="filter-select" id="history-filter-period" onchange="changeHistoryPeriod()">
+          <option value="90" selected>최근 3개월</option>
+          <option value="180">최근 6개월</option>
+          <option value="365">최근 1년</option>
+          <option value="3650">전체</option>
+        </select>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- ══════════════ 검색 탭 ══════════════ -->
+    <div class="section" id="sec-search">
+      <input class="search-input" id="search-input" placeholder="특이사항 키워드 검색…" oninput="debounceSearch()" />
+      <div class="search-filter-row">
+        <select class="filter-select" id="search-filter-loc" onchange="debounceSearch()">
+          <option value="">모든 장소</option>
+        </select>
+        <select class="filter-select" id="search-filter-eq" onchange="debounceSearch()">
+          <option value="">모든 장비</option>
+        </select>
+        <select class="filter-select" id="search-filter-period" onchange="debounceSearch()">
+          <option value="3month" selected>최근 3개월</option>
+          <option value="6month">최근 6개월</option>
+          <option value="year">최근 1년</option>
+          <option value="all">전체</option>
+        </select>
+      </div>
+      <div id="search-results"></div>
+    </div>
+
+    <!-- ══════════════ 대시보드 탭 ══════════════ -->
+    <div class="section" id="sec-dashboard">
+      <div class="period-filter">
+        <button class="period-btn active" onclick="setPeriod('month',this)">이번 달</button>
+        <button class="period-btn" onclick="setPeriod('3month',this)">3개월</button>
+        <button class="period-btn" onclick="setPeriod('6month',this)">6개월</button>
+        <button class="period-btn" onclick="setPeriod('all',this)">전체</button>
+      </div>
+      <div id="dashboard-body">
+        <div class="dash-loading">⏳ 데이터를 불러오는 중…</div>
+      </div>
+    </div>
+
+    <!-- ══════════════ 설정 탭 ══════════════ -->
+    <div class="section" id="sec-settings">
+
+      <!-- 잠금 화면 -->
+      <div id="settings-lock">
+        <div style="text-align:center;padding:64px 16px 32px;">
+          <div style="font-size:40px;margin-bottom:16px;">🔒</div>
+          <div style="font-size:16px;color:var(--surface);font-weight:700;margin-bottom:6px;">관리자 전용</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:24px;">비밀번호를 입력하세요</div>
+          <input class="input-field" id="settings-pw" type="password" placeholder="비밀번호"
+            style="max-width:200px;width:100%;text-align:center;letter-spacing:6px;font-size:20px;"
+            onkeydown="if(event.key==='Enter') checkSettingsPw()" oninput="checkSettingsPw()" />
+          <div style="font-size:12px;color:var(--ng);margin-top:10px;min-height:18px;" id="pw-error"></div>
+        </div>
+      </div>
+
+      <!-- 설정 내용 -->
+      <div id="settings-content" style="display:none;">
+        <div class="settings-admin-bar">
+          <div class="settings-admin-title">관리자 모드</div>
+          <button class="settings-lock-btn" onclick="lockSettings()">잠금</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">시스템 요약</div>
+          <div class="setting-desc">현재 DB에 저장된 장소, 체크리스트, 점검 기록, 특이사항 현황입니다.</div>
+          <div class="admin-summary-grid" id="admin-summary-grid">
+            <div class="admin-summary-item"><div class="admin-summary-label">상태</div><div class="admin-summary-value">불러오는 중</div></div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="loadAdminSummary()">관리자 데이터 새로고침</button>
+          </div>
+          <div style="font-size:12px;margin-top:6px;" id="admin-summary-result"></div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">운영 상태</div>
+          <div class="setting-desc">앱 버전, API 주소, DB 종류, 원본 엑셀 연결 상태를 확인합니다.</div>
+          <div class="admin-status-list" id="admin-status-list">
+            <div class="admin-status-row"><span class="admin-status-name">상태</span><span class="admin-status-value">불러오는 중</span></div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">원본 체크리스트 동기화</div>
+          <div class="setting-desc">원본 시트를 매번 읽지 않도록 필요할 때만 불러옵니다. 버튼을 누르면 각 시트의 점검 항목, 점검 방법, 결과 헤더를 찾아 앱용 목록으로 갱신합니다.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="syncChecklistFromSource()">원본 다시 불러오기</button>
+          </div>
+          <div style="font-size:12px;margin-top:8px;color:var(--text3);" id="sync-info">마지막 동기화: 확인 전</div>
+          <div style="font-size:12px;margin-top:6px;" id="sync-result"></div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-label">기존 엑셀 점검 결과 이관</div>
+          <div class="setting-desc">원본 엑셀의 결과/비고 칸에 이미 입력된 값을 DB 점검 이력으로 가져옵니다. 같은 날짜/장소의 기존 엑셀 이관 기록은 중복 방지를 위해 다시 저장됩니다.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="importExcelResults()">기존 결과 가져오기</button>
+          </div>
+          <div style="font-size:12px;margin-top:6px;" id="import-result"></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">로컬 데이터 관리</div>
+          <div class="setting-desc">저장 버튼을 누를 때마다 기기에 남겨지는 임시 백업 파일입니다. (원본 영향X)</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-secondary" onclick="exportLocal()">📥 JSON 내보내기</button>
+            <button class="btn-secondary" style="color:var(--ng);border-color:rgba(231,76,60,0.3);"
+              onclick="clearLocal()">🗑 전체 삭제</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- 상세보기 모달 -->
+  <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+    <div class="modal" id="modal-body">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+      <div class="modal-meta" id="modal-meta"></div>
+      <div id="modal-items"></div>
+    </div>
+  </div>
+
+  <!-- 저장 완료 팝업 -->
+  <div class="modal-overlay" id="save-done-modal">
+    <div class="modal"
+      style="border-radius:var(--radius);margin:auto;max-width:300px;text-align:center;padding:32px 24px;">
+      <div style="font-size:40px;margin-bottom:16px;">✅</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px;">저장 완료</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:24px;">데이터 저장이 완료되었습니다</div>
+      <button class="btn-primary" onclick="afterSaveDone()">확인</button>
+    </div>
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════════════
+    // 설정값 (관리자만 변경)
+    // ═══════════════════════════════════════════════════
+    const APP_VERSION = 'v1.1.0-local';
+    // v1.1.0-local 변경: 기존 GAS 주소에서 로컬 NAS FastAPI 주소로 변경했습니다.
+    // 변경 전: https://script.google.com/macros/s/AKfycbyPQMrXg5vUNNKHRQlgUW5-pGDDvA0LlegLwiwSZDKK5-PICbDKsaqhFIqRspevzJBY/exec
+    // 변경 후: http://127.0.0.1:8010/api/did
+    const GAS_URL = 'http://127.0.0.1:8010/api/did';
+    const SETTINGS_TAB_INDEX = 4;
+    const AUTH_SESSION_KEY = 'did_auth';
+
+    // ═══════════════════════════════════════════════════
+    // 점검 데이터 및 상태
+    // ═══════════════════════════════════════════════════
+    let LOCATIONS = {};
+    let LAST_DATES = {};
+    let CHECKLIST = {};
+    let LAST_SYNC_AT = '';
+
+    function escapeAttr(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function getChecklistItems(location) {
+      return CHECKLIST[location] || [];
+    }
+
+    async function loadChecklistForLocation(location) {
+      if (CHECKLIST[location]) return CHECKLIST[location];
+
+      const activeUrl = GAS_URL;
+      const params = new URLSearchParams();
+      params.append('action', 'checklist');
+      params.append('location', location);
+      params.append('t', Date.now());
+
+      const res = await fetch(`${activeUrl}?${params.toString()}`);
+      const data = await res.json();
+      if (data.status !== 'ok') throw new Error(data.message || '체크리스트를 불러오지 못했습니다.');
+
+      CHECKLIST[location] = data.items || [];
+      return CHECKLIST[location];
+    }
+
+    function isElevatorLocation(location) {
+      const elevatorLocations = LOCATIONS['승강기'] || [];
+      return elevatorLocations.includes(location);
+    }
+
+    function isOpticalSignalGroup(systemName) {
+      const normalized = String(systemName || '').replace(/\s/g, '');
+      return normalized.includes('광') && normalized.includes('신호') && normalized.includes('측정');
+    }
+
+    function renderSyncInfo() {
+      const syncInfo = document.getElementById('sync-info');
+      if (!syncInfo) return;
+      syncInfo.textContent = `마지막 동기화: ${LAST_SYNC_AT || '아직 없음'}`;
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 앱 상태
+    // ═══════════════════════════════════════════════════
+    let currentLocation = null;
+    let checkResults = {}; // { idx: { result: 'ok'|'ng'|null, memo: '' } }
+    let isStartingInspection = false; // v3.5.3 신규: 시작 버튼 문구를 바꾸지 않고 중복 실행만 막습니다.
+
+    // ═══════════════════════════════════════════════════
+    // 초기화 (서버 연동)
+    // ═══════════════════════════════════════════════════
+    async function initApp() {
+      const loading = document.getElementById('app-loading');
+      try {
+        const activeUrl = GAS_URL;
+        const res = await fetch(`${activeUrl}?action=init&t=${Date.now()}`);
+        const data = await res.json();
+
+        if (data.status === 'ok') {
+          LOCATIONS = data.locations;
+          LAST_DATES = data.lastDates;
+          CHECKLIST = {};
+          LAST_SYNC_AT = data.lastSyncAt || '';
+
+          document.getElementById('appVersionDisplay').textContent = APP_VERSION;
+          const now = new Date();
+          document.getElementById('headerDate').textContent =
+            `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+
+          renderLocationList();
+          renderHistoryFilter();
+          initSearchFilters();
+          renderSyncInfo();
+
+          loading.style.opacity = '0';
+          setTimeout(() => loading.style.display = 'none', 300);
+        } else {
+          throw new Error(data.message);
+        }
+      } catch (err) {
+        console.error(err);
+        document.querySelector('.loading-msg').innerHTML =
+          `<span style="color:var(--ng)">연결 실패</span><br><small>${err.message}</small><br>` +
+          `<button class="btn-secondary" onclick="location.reload()" style="margin-top:10px">다시 시도</button>`;
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 탭 전환
+    // ═══════════════════════════════════════════════════
+    function activateSection(sectionId, activeButton) {
+      // v1.0.2 변경: 섹션/탭 전환 DOM 조작을 2곳(showTab/showSettings)에서 1곳으로 모아 리플로우를 줄입니다.
+      document.querySelectorAll('.section').forEach(section => section.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(button => button.classList.remove('active'));
+      document.getElementById(sectionId).classList.add('active');
+      if (activeButton) activeButton.classList.add('active');
+    }
+
+    function showTab(tab) {
+      const activeButton = window.event && window.event.target ? window.event.target : null;
+      activateSection('sec-' + tab, activeButton);
+
+      if (tab === 'history') { historyCache = null; renderHistory(); }
+      if (tab === 'search') {
+        // v3.5.2 변경: 검색 탭 진입 시 MEMO_RECORDS를 미리 받아 장비 필터를 빠르게 채웁니다.
+        loadMemoSearchCache().catch(() => {});
+        renderSearch();
+      }
+      if (tab === 'dashboard') { dashData = null; ngOpen = false; memoOpen = false; loadDashboard(); }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 장소 목록 렌더링
+    // ═══════════════════════════════════════════════════
+    function renderLocationList() {
+      const container = document.getElementById('location-list');
+      let html = '';
+      const groups = Object.entries(LOCATIONS);
+
+      if (!groups.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">!</div>동기화된 장소가 없습니다.<br>설정 탭에서 원본 다시 불러오기를 실행해주세요.</div>`;
+        return;
+      }
+      for (const [group, locs] of groups) {
+        html += `<div class="location-group">
+      <div class="location-group-title">${group}</div>
+      <div class="location-grid">`;
+        locs.forEach(loc => {
+          html += `<button class="location-btn" onclick="selectLocation('${escapeAttr(loc)}')">${loc}</button>`;
+        });
+        html += `</div></div>`;
+      }
+      container.innerHTML = html;
+    }
+
+    function selectLocation(loc) {
+      currentLocation = loc;
+      document.querySelectorAll('.location-btn').forEach(b => {
+        b.classList.toggle('selected', b.textContent === loc);
+      });
+      checkStartReady();
+    }
+
+    function canStartInspection() {
+      const name = document.getElementById('inspector-name').value.trim();
+      return Boolean(name && currentLocation);
+    }
+
+    function setStartButtonLoading(isLoading) {
+      const startBtn = document.getElementById('btn-start');
+      if (!startBtn) return;
+
+      // v3.5.3 변경: 로딩 중에도 버튼 문구를 바꾸지 않아 sticky 영역 재렌더링 버벅임을 줄입니다.
+      startBtn.disabled = isLoading || !canStartInspection();
+      startBtn.classList.toggle('is-loading', isLoading);
+      startBtn.textContent = '점검 시작 →';
+    }
+
+    function checkStartReady() {
+      setStartButtonLoading(false);
+    }
+
+    document.addEventListener('input', e => {
+      if (e.target.id === 'inspector-name') checkStartReady();
+    });
+
+    function showInspectionStep() {
+      // v1.0.2 변경: 점검 화면 전환 DOM 조작은 2개 요소를 한 함수에서만 처리합니다. 대상 수 2개는 유지합니다.
+      document.getElementById('step-select').style.display = 'none';
+      document.getElementById('step-inspect').style.display = 'flex';
+    }
+
+    function showSelectStep() {
+      // v1.0.2 변경: 장소 선택 화면 복귀 DOM 조작은 2개 요소를 한 함수에서만 처리합니다. 대상 수 2개는 유지합니다.
+      document.getElementById('step-select').style.display = 'block';
+      document.getElementById('step-inspect').style.display = 'none';
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 점검 시작
+    // ═══════════════════════════════════════════════════
+    async function startInspection() {
+      if (isStartingInspection || !canStartInspection()) return;
+
+      isStartingInspection = true;
+      setStartButtonLoading(true);
+
+      try {
+        const items = await loadChecklistForLocation(currentLocation);
+
+        checkResults = {};
+        items.forEach((_, i) => { checkResults[i] = { result: null, memo: '' }; });
+        showInspectionStep();
+        window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+
+        document.getElementById('cur-location').textContent = currentLocation;
+        document.getElementById('cur-inspector').textContent = document.getElementById('inspector-name').value.trim();
+        document.getElementById('total-count').textContent = `(${items.length}건)`;
+
+        const lastDate = LAST_DATES[currentLocation];
+        document.getElementById('recent-date').textContent = lastDate ? lastDate : '기록 없음';
+
+        renderChecklist();
+        updateProgress();
+      } catch (err) {
+        alert(err.message || '체크리스트를 불러오지 못했습니다.');
+      } finally {
+        isStartingInspection = false;
+        setStartButtonLoading(false);
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // 체크리스트 렌더링
+    // ═══════════════════════════════════════════════════
+    function renderChecklist() {
+      const items = getChecklistItems(currentLocation);
+      const grouped = {};
+      items.forEach((item, i) => {
+        const systemName = item.system || '시스템 미분류';
+        if (!grouped[systemName]) grouped[systemName] = [];
+        grouped[systemName].push({ ...item, idx: i });
+      });
+
+      let html = '';
+      let groupIdx = 0;
+      let measureOrder = 0;
+      const showGroupToggle = isElevatorLocation(currentLocation);
+      for (const [systemName, eqItems] of Object.entries(grouped)) {
+        const isFirst = groupIdx === 0;
+        const isOpticalGroup = isOpticalSignalGroup(systemName);
+        const isGroupChecked = !isOpticalGroup;
+        const groupClasses = [
+          'equipment-group',
+          isFirst && !isOpticalGroup ? '' : 'collapsed',
+          isOpticalGroup ? 'disabled' : ''
+        ].filter(Boolean).join(' ');
+        const toggleHtml = showGroupToggle ? `
+            <input type="checkbox" class="group-toggle-input" ${isGroupChecked ? 'checked' : ''}
+                   onclick="event.stopPropagation(); toggleGroupActive(${groupIdx}, this)"
+                   title="이 장소 점검 포함">` : '';
+
+        html += `<div class="${groupClasses}" id="group-wrap-${groupIdx}">
+          <div class="group-header-wrap">
+            <div class="equipment-name" onclick="toggleAccordion(this)">${systemName}</div>
+            ${toggleHtml}
+          </div>
+          <div class="eq-items-container">`;
+
+        if (isOpticalGroup) {
+          for (let pairStart = 0; pairStart < eqItems.length; pairStart += 2) {
+            const pairItems = eqItems.slice(pairStart, pairStart + 2);
+            const upItem = pairItems[0];
+            const downItem = pairItems[1];
+            const memoIdx = upItem?.idx ?? downItem?.idx;
+            const opticalEquipment = upItem?.equipment || downItem?.equipment || '장비';
+            const rangeText = upItem?.desc || downItem?.desc || '광 신호 정상범위 -10dbm ± 2dbm';
+            const upLabel = upItem?.item || '상향';
+            const downLabel = downItem?.item || '하향';
+
+            if (upItem) checkResults[upItem.idx].result = 'measurement';
+            if (downItem) checkResults[downItem.idx].result = 'measurement';
+
+            html += `<div class="optical-pair-card" id="optical-card-${memoIdx}">
+      <div class="optical-card-header">
+        <div>
+          <div class="optical-title">[${opticalEquipment}]</div>
+          <div class="optical-range">${rangeText}</div>
+        </div>
+        <button class="optical-ng-btn" id="optical-ng-${memoIdx}" type="button"
+          onclick="toggleOpticalNg(${memoIdx}, [${pairItems.map(({ idx }) => idx).join(',')}])">X</button>
+      </div>
+      <div class="optical-input-row">
+        <div class="optical-measure-side">
+          <div class="optical-table-label" title="${escapeAttr(upLabel)}">${upLabel}</div>`;
+
+            if (upItem) {
+              html += `
+          <div class="optical-measure-item check-item" id="item-${upItem.idx}">
+            <div class="optical-value-wrap">
+              <span class="optical-minus-prefix">-</span>
+              <input class="optical-measure-input" id="measurement-${upItem.idx}" type="text" inputmode="decimal"
+                pattern="[0-9.]*" autocomplete="off" placeholder="0" enterkeyhint="next"
+                tabindex="${measureOrder + 1}" data-measure-order="${measureOrder++}"
+                oninput="setMeasurement(${upItem.idx},this.value)">
+            </div>
+          </div>`;
+            } else {
+              html += `<div></div>`;
+            }
+
+            html += `
+        </div>
+        <div class="optical-measure-side">
+          <div class="optical-table-label" title="${escapeAttr(downLabel)}">${downLabel}</div>`;
+
+            if (downItem) {
+              html += `
+          <div class="optical-measure-item check-item" id="item-${downItem.idx}">
+            <div class="optical-value-wrap">
+              <span class="optical-minus-prefix">-</span>
+              <input class="optical-measure-input" id="measurement-${downItem.idx}" type="text" inputmode="decimal"
+                pattern="[0-9.]*" autocomplete="off" placeholder="0" enterkeyhint="next"
+                tabindex="${measureOrder + 1}" data-measure-order="${measureOrder++}"
+                oninput="setMeasurement(${downItem.idx},this.value)">
+            </div>
+          </div>`;
+            } else {
+              html += `<div></div>`;
+            }
+
+            html += `
+        </div>
+      </div>
+      <textarea class="memo-input" id="memo-${memoIdx}" placeholder="특이사항을 입력해 주세요..."
+        oninput="setOpticalMemo(${memoIdx}, this.value)"></textarea>
+    </div>`;
+          }
+        } else {
+          eqItems.forEach(({ idx, equipment, qty, item, desc }) => {
+            checkResults[idx].result = 'ok';
+            html += `
+      <div class="check-item result-ok" id="item-${idx}">
+        <div class="check-item-top">
+          <div class="check-item-info">
+            <div class="check-item-title">[${equipment}] ${item} <span class="check-item-qty">${qty && qty !== '-' && qty !== '?' ? '수량 ' + qty : ''}</span></div>
+            <div class="check-item-desc">${desc}</div>
+          </div>
+          <div class="check-btns">
+            <button class="check-btn ok ok-active" id="ok-${idx}" onclick="setResult(${idx},'ok')">O</button>
+            <button class="check-btn ng" id="ng-${idx}" onclick="setResult(${idx},'ng')">X</button>
+          </div>
+        </div>
+        <textarea class="memo-input" id="memo-${idx}" placeholder="특이사항을 입력해 주세요..."
+          oninput="setMemo(${idx},this.value)"></textarea>
+      </div>`;
+          });
+        }
+        html += `
+      <div class="accordion-close-wrap">
+        <button class="accordion-close-btn" type="button" onclick="closeAccordionFromBottom(this)">목록 닫기</button>
+      </div></div></div>`;
+        groupIdx++;
+      }
+      document.getElementById('checklist-body').innerHTML = html;
+      updateProgress();
+    }
+
+    function toggleAccordion(header) {
+      header.closest('.equipment-group').classList.toggle('collapsed');
+    }
+
+    function toggleGroupActive(groupIdx, checkbox) {
+      const group = document.getElementById('group-wrap-' + groupIdx);
+      if (checkbox.checked) {
+        group.classList.remove('disabled');
+        group.classList.remove('collapsed'); // 활성화 시 아코디언 열기
+      } else {
+        group.classList.add('disabled');
+        group.classList.add('collapsed'); // 비활성화 시 아코디언 닫기
+      }
+    }
+
+    function closeAccordionFromBottom(button) {
+      const group = button.closest('.equipment-group');
+      if (group) {
+        group.classList.add('collapsed');
+        group.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function setResult(idx, val) {
+      checkResults[idx].result = checkResults[idx].result === val ? null : val;
+      const okBtn = document.getElementById('ok-' + idx);
+      const ngBtn = document.getElementById('ng-' + idx);
+      const item = document.getElementById('item-' + idx);
+      okBtn.className = 'check-btn' + (checkResults[idx].result === 'ok' ? ' ok-active' : '');
+      ngBtn.className = 'check-btn' + (checkResults[idx].result === 'ng' ? ' ng-active' : '');
+      item.className = 'check-item' + (checkResults[idx].result === 'ok' ? ' result-ok' : checkResults[idx].result === 'ng' ? ' result-ng' : '');
+      updateProgress();
+    }
+
+    function setMemo(idx, val) {
+      checkResults[idx].memo = val;
+    }
+
+    function setMeasurement(idx, val) {
+      // 광 측정 입력 방식 변경: 사용자는 양수 숫자만 입력하고, 저장값에는 음수 부호를 자동으로 붙입니다.
+      // 예외 처리 신규: -0, -0.0, -0.00은 모두 0으로 저장합니다.
+      const numericText = String(val || '').replace(/[^0-9.]/g, '');
+      const input = document.getElementById('measurement-' + idx);
+      if (input && input.value !== numericText) input.value = numericText;
+      if (checkResults[idx].result !== 'ng') checkResults[idx].result = 'measurement';
+      const numericValue = Number(numericText);
+      checkResults[idx].measurementValue = numericText && numericValue !== 0 ? '-' + numericText : (numericText ? '0' : '');
+    }
+
+    function toggleOpticalNg(memoIdx, itemIndexes) {
+      const target = checkResults[memoIdx] || { result: 'measurement', memo: '', measurementValue: '' };
+      const nextResult = target.result === 'ng' ? 'measurement' : 'ng';
+
+      itemIndexes.forEach(idx => {
+        if (!checkResults[idx]) checkResults[idx] = { result: 'measurement', memo: '', measurementValue: '' };
+        if (idx === memoIdx) {
+          checkResults[idx].result = nextResult;
+          if (nextResult !== 'ng') checkResults[idx].memo = '';
+        } else if (checkResults[idx].result !== 'ng') {
+          checkResults[idx].result = 'measurement';
+        }
+      });
+
+      const card = document.getElementById('optical-card-' + memoIdx);
+      const button = document.getElementById('optical-ng-' + memoIdx);
+      const memoInput = document.getElementById('memo-' + memoIdx);
+      if (card) card.classList.toggle('result-ng', nextResult === 'ng');
+      if (button) button.classList.toggle('ng-active', nextResult === 'ng');
+      if (memoInput && nextResult !== 'ng') memoInput.value = '';
+      updateProgress();
+    }
+
+    function setOpticalMemo(idx, val) {
+      // 광 신호 특이사항은 수치와 분리해서 메모 필드에만 저장합니다.
+      checkResults[idx].memo = val;
+    }
+
+    function updateProgress() {
+      const ngCount = Object.values(checkResults).filter(r => r.result === 'ng').length;
+      const summaryEl = document.getElementById('summary-text');
+      if (summaryEl) {
+        summaryEl.innerHTML = `
+      <span class="summary-label">부적합(X) 항목:</span>
+      <span class="summary-val ${ngCount > 0 ? 'ng' : ''}">${ngCount}건</span>
+    `;
+      }
+    }
+
+    function backToSelect() {
+      showSelectStep();
+      document.getElementById('save-status').textContent = '';
+      const btn = document.getElementById('btn-save');
+      if (btn) btn.disabled = false;
+      currentLocation = null;
+      document.querySelectorAll('.location-btn').forEach(b => b.classList.remove('selected'));
+      setStartButtonLoading(false);
+    }
+
+    async function saveResult() {
+      const btn = document.getElementById('btn-save');
+      btn.disabled = true;
+
+      const inspector = document.getElementById('inspector-name').value.trim();
+      const now = new Date();
+      const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+      const items = getChecklistItems(currentLocation);
+      
+      // 그룹별 활성화 상태 수집
+      // v1.0.1 변경: 활성화 체크박스는 승강기 장소에만 표시합니다. 체크박스가 없으면 항상 활성 상태로 저장합니다.
+      const resultItems = items.map((item, i) => {
+        // 해당 아이템이 속한 그룹의 인덱스를 찾아서 체크박스 상태 확인
+        const itemEl = document.getElementById('item-' + i);
+        const groupEl = itemEl.closest('.equipment-group');
+        const groupToggle = groupEl ? groupEl.querySelector('.group-toggle-input') : null;
+        const isActive = groupToggle ? groupToggle.checked : true;
+        const resultState = checkResults[i] || {};
+
+        return {
+          sourceRow: item.sourceRow || 0,
+          system: item.system || '',
+          equipment: item.equipment,
+          quantity: item.qty || '',
+          checkItem: item.item,
+          checkMethod: item.desc || '',
+          result: isActive ? (resultState.result || '미체크') : '',
+          memo: isActive ? (resultState.memo || '') : '',
+          measurementValue: isActive ? (resultState.measurementValue || '') : ''
+        };
+      });
+
+      const payload = {
+        date: dateStr,
+        inspector,
+        location: currentLocation,
+        items: resultItems
+      };
+
+      const records = JSON.parse(localStorage.getItem('av_records') || '[]');
+      records.unshift({ ...payload, savedAt: now.toISOString() });
+      localStorage.setItem('av_records', JSON.stringify(records));
+
+      const activeUrl = GAS_URL;
+      const statusEl = document.getElementById('save-status');
+      statusEl.textContent = '저장 중…';
+      statusEl.className = 'save-status saving';
+
+      try {
+        const res = await fetch(activeUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify(payload)
+        });
+        const json = await res.json();
+        if (json.status === 'ok') {
+          // 최근 점검일 기준 변경: 서버는 ALL_RECORDS로 계산하고, 현재 화면은 저장 직후 바로 갱신합니다.
+          // 표시 형식 변경: 저장용 yyyy-MM-dd에서 화면용 yyyy.MM.dd로 바꿉니다.
+          LAST_DATES[currentLocation] = dateStr.split('-').join('.');
+          // v3.5.2 변경: 저장 후 새 특이사항이 검색에 반영되도록 검색 캐시를 비웁니다.
+          memoSearchCache = null;
+          statusEl.textContent = '';
+          document.getElementById('save-done-modal').classList.add('open');
+        } else {
+          statusEl.textContent = '⚠ 저장 오류: ' + (json.message || '알 수 없는 오류');
+          statusEl.className = 'save-status error';
+          btn.disabled = false;
+        }
+      } catch (err) {
+        statusEl.textContent = '⚠ 네트워크 오류 – 로컬에만 저장됨';
+        statusEl.className = 'save-status error';
+        btn.disabled = false;
+      }
+    }
+
+    function afterSaveDone() {
+      document.getElementById('save-done-modal').classList.remove('open');
+      backToSelect();
+    }
+
+    function renderHistoryFilter() {
+      const sel = document.getElementById('history-filter-loc');
+      sel.innerHTML = '<option value="">모든 장소</option>';
+      Object.values(LOCATIONS).flat().forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc; opt.textContent = loc;
+        sel.appendChild(opt);
+      });
+    }
+
+    function isMeasurementHistoryItem(item) {
+      // v1.0.4 신규: 히스토리 배지에서 광측정 항목을 O/X/메모와 별도로 집계합니다.
+      return item && (item.result === 'measurement' || String(item.measurementValue || '').trim() !== '');
+    }
+
+    let historyCache = null;
+
+    function getHistoryDays() {
+      // 변경: 히스토리 조회 기간을 고정 90일에서 선택값 기반으로 바꿨습니다. 기본값은 90일(3개월)입니다.
+      const periodSelect = document.getElementById('history-filter-period');
+      return periodSelect ? periodSelect.value : '90';
+    }
+
+    function changeHistoryPeriod() {
+      historyCache = null;
+      renderHistory();
+    }
+
+    async function renderHistory() {
+      const filterLoc = document.getElementById('history-filter-loc').value;
+      const filterResult = document.getElementById('history-filter-result').value;
+      const container = document.getElementById('history-list');
+
+      if (!historyCache) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">⏳</div>구글 시트에서 불러오는 중…</div>`;
+        try {
+          const activeUrl = GAS_URL;
+          const res = await fetch(`${activeUrl}?action=history&days=${getHistoryDays()}&t=${Date.now()}`);
+          const json = await res.json();
+          if (json.status !== 'ok') throw new Error(json.message);
+          historyCache = json.records || [];
+        } catch (err) {
+          container.innerHTML = `<div class="empty-state"><div class="empty-icon">⚠️</div>불러오기 실패</div>`;
+          return;
+        }
+      }
+
+      let records = [...historyCache];
+      if (filterLoc) records = records.filter(r => r.location === filterLoc);
+      if (filterResult === 'ng') records = records.filter(r => r.items.some(i => i.result === 'ng'));
+      if (filterResult === 'memo') records = records.filter(r => r.items.some(i => i.memo));
+
+      if (!records.length) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div>점검 기록이 없습니다</div>`;
+        return;
+      }
+
+      container.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <div style="font-size:12px;color:var(--text3);">총 ${records.length}건</div>
+      <button class="btn-secondary no-color-change" style="font-size:11px;padding:5px 10px;" onclick="refreshHistory()">🔄 새로고침</button>
+    </div>` +
+        records.map((r, i) => {
+          const ok = Number(r.ok ?? (r.items ? r.items.filter(it => it.result === 'ok').length : 0));
+          const ng = Number(r.ng ?? (r.items ? r.items.filter(it => it.result === 'ng').length : 0));
+          const memo = Number(r.memoCount ?? (r.items ? r.items.filter(it => it.memo).length : 0));
+          const measurement = Number(r.measurementCount ?? (r.items ? r.items.filter(isMeasurementHistoryItem).length : 0));
+          return `
+      <div class="history-record" onclick="showDetail(${i}, '${filterLoc}', '${filterResult}')">
+        <div class="history-record-top">
+          <div class="history-location">${r.location}</div>
+          <div class="history-date">${formatDate(r.date)}</div>
+        </div>
+        <div class="history-meta">점검자: ${r.inspector}</div>
+        <div class="history-stats">
+          <span class="stat-badge stat-ok">○ ${ok}</span>
+          <span class="stat-badge stat-ng">✕ ${ng}</span>
+          ${memo ? `<span class="stat-badge stat-memo">📝 ${memo}</span>` : ''}
+          ${measurement ? `<span class="stat-badge stat-measure">광측정 ${measurement}</span>` : ''}
+        </div>
+      </div>`;
+        }).join('');
+    }
+
+    function refreshHistory() { historyCache = null; renderHistory(); }
+
+    function showDetail(idx, filterLoc, filterResult) {
+      let records = [...(historyCache || [])];
+      if (filterLoc) records = records.filter(r => r.location === filterLoc);
+      if (filterResult === 'ng') records = records.filter(r => r.items.some(i => i.result === 'ng'));
+      if (filterResult === 'memo') records = records.filter(r => r.items.some(i => i.memo));
+
+      const r = records[idx];
+      if (!r) return;
+
+      document.getElementById('modal-title').textContent = r.location;
+      document.getElementById('modal-meta').textContent = `${formatDate(r.date)} · 점검자: ${r.inspector}`;
+
+      const html = r.items.map(item => {
+        const cls = item.result === 'ok' ? 'result-ok-badge' : item.result === 'ng' ? 'result-ng-badge' : 'result-skip-badge';
+        const label = item.result === 'ok' ? '○' : item.result === 'ng' ? '✕' : '-';
+        return `<div class="modal-item"><div class="modal-item-text"><div class="modal-item-name">[${item.equipment}] ${item.checkItem}</div>
+      ${item.memo ? `<div class="modal-item-memo">📝 ${item.memo}</div>` : ''}</div>
+      <span class="result-badge ${cls}">${label}</span></div>`;
+      }).join('');
+      document.getElementById('modal-items').innerHTML = html;
+      document.getElementById('modal-overlay').classList.add('open');
+    }
+
+    function closeModal(e) { if (e.target === document.getElementById('modal-overlay')) closeModalDirect(); }
+    function closeModalDirect() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+    function formatDate(raw) {
+      if (!raw) return '';
+      const d = new Date(raw);
+      if (isNaN(d.getTime())) return String(raw).slice(0, 10);
+      const days = ['일', '월', '화', '수', '목', '금', '토'];
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}(${days[d.getDay()]})`;
+    }
+
+    function initSearchFilters() {
+      const locSel = document.getElementById('search-filter-loc');
+      const eqSel = document.getElementById('search-filter-eq');
+      locSel.innerHTML = '<option value="">모든 장소</option>';
+      eqSel.innerHTML = '<option value="">모든 장비</option>';
+      Object.values(LOCATIONS).flat().forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc; opt.textContent = loc;
+        locSel.appendChild(opt);
+      });
+      const eqSet = new Set();
+      Object.values(CHECKLIST).forEach(items => items.forEach(i => eqSet.add(i.equipment)));
+      [...eqSet].filter(Boolean).sort().forEach(eq => {
+        const opt = document.createElement('option');
+        opt.value = eq; opt.textContent = eq;
+        eqSel.appendChild(opt);
+      });
+    }
+
+    let searchTimer = null, searchToken = 0, memoSearchCache = null, memoSearchLoading = null;
+    // v3.5.2 변경: 서버 검색 방식 600ms에서 로컬 필터링 방식 150ms로 줄였습니다.
+    function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(renderSearch, 150); }
+
+    async function loadMemoSearchCache() {
+      if (memoSearchCache) return memoSearchCache;
+      if (memoSearchLoading) return memoSearchLoading;
+
+      const params = new URLSearchParams();
+      params.append('action', 'memoRecords');
+      params.append('t', Date.now());
+
+      // v3.5.2 변경: 검색할 때마다 서버를 호출하지 않고 MEMO_RECORDS를 한 번만 불러옵니다.
+      memoSearchLoading = fetch(`${GAS_URL}?${params.toString()}`)
+        .then(res => res.json())
+        .then(json => {
+          if (json.status !== 'ok') throw new Error(json.message || '특이사항 목록을 불러오지 못했습니다.');
+          memoSearchCache = json.records || [];
+          refreshSearchEquipmentOptions(memoSearchCache);
+          return memoSearchCache;
+        })
+        .finally(() => { memoSearchLoading = null; });
+
+      return memoSearchLoading;
+    }
+
+    function refreshSearchEquipmentOptions(records) {
+      const eqSel = document.getElementById('search-filter-eq');
+      if (!eqSel) return;
+
+      const selected = eqSel.value;
+      const eqSet = new Set();
+      records.forEach(r => {
+        if (r.equipment) eqSet.add(String(r.equipment));
+      });
+
+      eqSel.innerHTML = '<option value="">모든 장비</option>';
+      [...eqSet].sort().forEach(eq => {
+        const opt = document.createElement('option');
+        opt.value = eq;
+        opt.textContent = eq;
+        eqSel.appendChild(opt);
+      });
+      eqSel.value = [...eqSet].includes(selected) ? selected : '';
+    }
+
+    function getSearchPeriodCutoff(period) {
+      if (period === 'all') return null;
+      const d = new Date();
+      // 검색 기간 기준 변경 없음: 3개월/6개월/1년 옵션을 브라우저에서 동일하게 계산합니다.
+      if (period === '6month') d.setMonth(d.getMonth() - 6);
+      else if (period === 'year') d.setFullYear(d.getFullYear() - 1);
+      else d.setMonth(d.getMonth() - 3);
+      d.setHours(0, 0, 0, 0);
+      return d;
+    }
+
+    function isInSearchPeriod(rawDate, cutoff) {
+      if (!cutoff) return true;
+      const date = new Date(rawDate);
+      if (isNaN(date.getTime())) return true;
+      return date >= cutoff;
+    }
+
+    async function renderSearch() {
+      const query = document.getElementById('search-input').value.trim();
+      const loc = document.getElementById('search-filter-loc').value;
+      const eq = document.getElementById('search-filter-eq').value;
+      const period = document.getElementById('search-filter-period').value;
+      const container = document.getElementById('search-results');
+
+      if (!query && !loc && !eq) {
+        container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔍</div>키워드 입력 또는 필터 선택</div>`;
+        return;
+      }
+      const token = ++searchToken;
+      if (!memoSearchCache) container.innerHTML = `<div class="empty-state">⏳ 특이사항 목록을 불러오는 중…</div>`;
+
+      try {
+        const records = await loadMemoSearchCache();
+        if (token !== searchToken) return;
+
+        const queryLower = query.toLowerCase();
+        const cutoff = getSearchPeriodCutoff(period);
+        const results = records.filter(r => {
+          const memoText = String(r.memo || '').toLowerCase();
+          const matchMemo = !queryLower || memoText.includes(queryLower);
+          const matchLocation = !loc || String(r.location || '') === loc;
+          const matchEquipment = !eq || String(r.equipment || '') === eq;
+          return matchMemo && matchLocation && matchEquipment && isInSearchPeriod(r.date, cutoff);
+        });
+
+        if (!results.length) { container.innerHTML = `<div class="empty-state">특이사항이 없습니다</div>`; return; }
+
+        const hl = (text) => query ? String(text).replace(new RegExp(query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi'), m => `<span class="highlight">${m}</span>`) : String(text);
+        const visibleResults = results.slice(0, 50);
+        const countText = results.length > visibleResults.length ? `총 ${results.length}건 중 ${visibleResults.length}건 표시` : `총 ${results.length}건`;
+        container.innerHTML = `<div style="font-size:12px;color:var(--text3);margin-bottom:12px;">${countText}</div>` +
+          visibleResults.map(r => `<div class="search-result"><div class="search-result-top"><span class="search-loc">${r.location}</span><span class="search-date">${formatDate(r.date)}</span></div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px;">점검자: ${r.inspector}</div>
+        <div class="search-item-name">[${r.equipment}] ${r.checkItem}</div>
+        ${r.memo ? `<div class="search-memo">${hl(r.memo)}</div>` : ''}</div>`).join('');
+      } catch (err) {
+        if (token === searchToken) container.innerHTML = `<div class="empty-state">⚠️ 오류 발생</div>`;
+      }
+    }
+
+    function showSettings() {
+      const btns = document.querySelectorAll('.tab-btn');
+      activateSection('sec-settings', btns[SETTINGS_TAB_INDEX]);
+
+      if (sessionStorage.getItem(AUTH_SESSION_KEY) === '1') { unlockSettings(); }
+      else {
+        setSettingsLocked(true);
+      }
+    }
+
+    function setSettingsLocked(isLocked) {
+      const lockPanel = document.getElementById('settings-lock');
+      const contentPanel = document.getElementById('settings-content');
+      const passwordInput = document.getElementById('settings-pw');
+      const errorEl = document.getElementById('pw-error');
+
+      // v1.0.2 변경: 설정 잠금 화면 DOM 접근을 5회 이상 반복하던 구조에서 1개 함수로 정리했습니다.
+      lockPanel.style.display = isLocked ? 'block' : 'none';
+      contentPanel.style.display = isLocked ? 'none' : 'block';
+      if (!isLocked) return;
+
+      passwordInput.value = '';
+      errorEl.textContent = '';
+      setTimeout(() => passwordInput.focus(), 100);
+    }
+
+    async function checkSettingsPw() {
+      const val = document.getElementById('settings-pw').value;
+      if (val.length < 4) return;
+      try {
+        const activeUrl = GAS_URL;
+        const res = await fetch(`${activeUrl}?action=verifyPw&pw=${val}`);
+        const data = await res.json();
+        if (data.status === 'ok') { sessionStorage.setItem(AUTH_SESSION_KEY, '1'); unlockSettings(); }
+        else {
+          document.getElementById('pw-error').textContent = '틀렸습니다.';
+          setTimeout(() => { document.getElementById('settings-pw').value = ''; document.getElementById('pw-error').textContent = ''; }, 1000);
+        }
+      } catch { document.getElementById('pw-error').textContent = '연결 오류'; }
+    }
+
+    function unlockSettings() {
+      setSettingsLocked(false);
+      renderSyncInfo();
+      loadAdminSummary();
+    }
+
+    function lockSettings() { sessionStorage.removeItem(AUTH_SESSION_KEY); showSettings(); }
+
+    function formatAdminNumber(value) {
+      return Number(value || 0).toLocaleString('ko-KR');
+    }
+
+    function renderAdminSummary(data) {
+      const summaryGrid = document.getElementById('admin-summary-grid');
+      const statusList = document.getElementById('admin-status-list');
+      if (!summaryGrid || !statusList) return;
+
+      summaryGrid.innerHTML = [
+        ['장소', `${formatAdminNumber(data.locationCount)}개`],
+        ['체크리스트', `${formatAdminNumber(data.checklistItemCount)}개`],
+        ['점검 기록', `${formatAdminNumber(data.inspectionRunCount)}건`],
+        ['NG', `${formatAdminNumber(data.ngCount)}건`],
+        ['특이사항', `${formatAdminNumber(data.memoCount)}건`],
+        ['최근 점검', data.lastInspectionText || data.lastInspectionDate || '-']
+      ].map(([label, value]) => `
+        <div class="admin-summary-item">
+          <div class="admin-summary-label">${label}</div>
+          <div class="admin-summary-value">${value}</div>
+        </div>`).join('');
+
+      const sourceExcelStatus = data.sourceExcelExists ? `${data.sourceExcelName} 확인됨` : `${data.sourceExcelName || '원본 엑셀'} 없음`;
+      statusList.innerHTML = [
+        ['API 연결', '정상'],
+        ['앱 버전', APP_VERSION],
+        ['DB', data.databaseType || '-'],
+        ['API 주소', GAS_URL],
+        ['원본 엑셀', sourceExcelStatus],
+        ['마지막 동기화', data.lastSyncAt || '아직 없음']
+      ].map(([name, value]) => `
+        <div class="admin-status-row">
+          <span class="admin-status-name">${name}</span>
+          <span class="admin-status-value">${value}</span>
+        </div>`).join('');
+    }
+
+    async function loadAdminSummary() {
+      const resultEl = document.getElementById('admin-summary-result');
+      const summaryGrid = document.getElementById('admin-summary-grid');
+      const statusList = document.getElementById('admin-status-list');
+      if (resultEl) {
+        resultEl.textContent = '불러오는 중…';
+        resultEl.style.color = 'var(--text3)';
+      }
+      try {
+        const res = await fetch(`${GAS_URL}?action=adminSummary&t=${Date.now()}`);
+        const json = await res.json();
+        if (json.status !== 'ok') throw new Error(json.message || '관리자 요약을 불러오지 못했습니다.');
+        renderAdminSummary(json);
+        if (resultEl) {
+          resultEl.textContent = '최신 상태로 갱신되었습니다.';
+          resultEl.style.color = 'var(--ok)';
+        }
+      } catch (err) {
+        if (summaryGrid) summaryGrid.innerHTML = `<div class="admin-summary-item"><div class="admin-summary-label">상태</div><div class="admin-summary-value">실패</div></div>`;
+        if (statusList) statusList.innerHTML = `<div class="admin-status-row"><span class="admin-status-name">API 연결</span><span class="admin-status-value">실패</span></div>`;
+        if (resultEl) {
+          resultEl.textContent = err.message || '불러오기 실패';
+          resultEl.style.color = 'var(--ng)';
+        }
+      }
+    }
+
+
+    async function syncChecklistFromSource() {
+      const activeUrl = GAS_URL;
+      const resultEl = document.getElementById('sync-result');
+      resultEl.textContent = '진행 중…';
+      try {
+        const res = await fetch(`${activeUrl}?action=syncChecklist&t=${Date.now()}`);
+        const json = await res.json();
+        if (json.status !== 'ok') throw new Error();
+        LAST_SYNC_AT = json.lastSyncAt || LAST_SYNC_AT;
+        CHECKLIST = {};
+        resultEl.textContent = `완료: 장소 ${json.locationCount}개, 항목 ${json.itemCount}개`;
+        resultEl.style.color = 'var(--ok)';
+        renderSyncInfo();
+        await initApp();
+        loadAdminSummary();
+      } catch { resultEl.textContent = '실패'; resultEl.style.color = 'var(--ng)'; }
+    }
+
+    async function importExcelResults() {
+      const activeUrl = GAS_URL;
+      const resultEl = document.getElementById('import-result');
+      resultEl.textContent = '가져오는 중…';
+      resultEl.style.color = 'var(--text3)';
+      try {
+        const res = await fetch(`${activeUrl}?action=importExcelResults&t=${Date.now()}`);
+        const json = await res.json();
+        if (json.status !== 'ok') throw new Error(json.message || '가져오기 실패');
+        historyCache = null;
+        memoSearchCache = null;
+        dashData = null;
+        resultEl.textContent = `완료: 장소 ${json.locationCount}개, 기록 ${json.runCount}건, 항목 ${json.itemCount}개, 특이사항 ${json.memoCount}개`;
+        resultEl.style.color = 'var(--ok)';
+        loadAdminSummary();
+      } catch (err) {
+        resultEl.textContent = `실패: ${err.message || '알 수 없는 오류'}`;
+        resultEl.style.color = 'var(--ng)';
+      }
+    }
+    function exportLocal() {
+      const records = localStorage.getItem('av_records') || '[]';
+      const blob = new Blob([records], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `AV_점검기록_${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+    }
+
+    function clearLocal() { if (confirm('전체 삭제하시겠습니까?')) { localStorage.removeItem('av_records'); renderHistory(); } }
+
+    let dashPeriod = 'month', dashData = null, ngOpen = false, memoOpen = false, selectedOpticalLocations = [];
+    function setPeriod(period, btn) {
+      dashPeriod = period; dashData = null; selectedOpticalLocations = [];
+      document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active'); loadDashboard();
+    }
+
+    async function loadDashboard() {
+      document.getElementById('dashboard-body').innerHTML = `<div class="dash-loading">⏳ 데이터를 불러오는 중…</div>`;
+      try {
+        const activeUrl = GAS_URL;
+        const res = await fetch(`${activeUrl}?action=dashboard&period=${dashPeriod}&t=${Date.now()}`);
+        const json = await res.json();
+        if (json.status !== 'ok') throw new Error(json.message);
+        dashData = json;
+        selectedOpticalLocations = [];
+        renderDashboard();
+      } catch (err) {
+        document.getElementById('dashboard-body').innerHTML = `<div class="dash-loading">⚠️ 불러오기 실패<br><span style="font-size:11px">${err.message}</span></div>`;
+      }
+    }
+
+    function formatOpticalValue(value) {
+      if (value === null || value === undefined || value === '') return '-';
+      const numberValue = Number(value);
+      if (Number.isNaN(numberValue)) return '-';
+      return numberValue.toFixed(1);
+    }
+
+    function getOpticalY(value, height) {
+      // v3.6.7 변경: -50dBm 이하는 일반 스케일이 아니라 맨 아래 DEAD 라인으로 압축 표시합니다.
+      if (Number(value) <= -50) return height - 8;
+      // 일반 광 신호 그래프 표시 범위는 -14dBm~ -6dBm입니다.
+      const min = -14;
+      const max = -6;
+      const clamped = Math.max(min, Math.min(max, Number(value)));
+      return 8 + ((max - clamped) / (max - min)) * (height - 26);
+    }
+
+    function buildOpticalPolyline(points, key, width, height) {
+      const values = points
+        .map((point, index) => ({ index, value: point[key] }))
+        .filter(point => point.value !== null && point.value !== undefined && point.value !== '');
+
+      if (!values.length) return '';
+
+      const lastIndex = Math.max(points.length - 1, 1);
+      return values.map(point => {
+        const x = 10 + (point.index / lastIndex) * (width - 20);
+        const y = getOpticalY(point.value, height);
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+    }
+
+    function buildOpticalCircles(points, key, width, height, color) {
+      const lastIndex = Math.max(points.length - 1, 1);
+      return points.map((point, index) => {
+        const value = point[key];
+        if (value === null || value === undefined || value === '') return '';
+        const x = 10 + (index / lastIndex) * (width - 20);
+        const y = getOpticalY(value, height);
+        return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${color}"></circle>`;
+      }).join('');
+    }
+
+    function renderOpticalChart(points) {
+      const width = 300;
+      const height = 86;
+      const normalTop = getOpticalY(-8, height);
+      const normalBottom = getOpticalY(-12, height);
+      const deadY = height - 8;
+      const upLine = buildOpticalPolyline(points, 'up', width, height);
+      const downLine = buildOpticalPolyline(points, 'down', width, height);
+      const firstLabel = points[0]?.label || '';
+      const lastLabel = points[points.length - 1]?.label || '';
+
+      return `<svg class="optical-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+        <rect x="0" y="0" width="${width}" height="${height}" fill="#12141c"></rect>
+        <rect x="0" y="${normalTop.toFixed(1)}" width="${width}" height="${(normalBottom - normalTop).toFixed(1)}" fill="rgba(46,204,113,0.10)"></rect>
+        <line x1="0" y1="${normalTop.toFixed(1)}" x2="${width}" y2="${normalTop.toFixed(1)}" stroke="rgba(46,204,113,0.35)" stroke-width="1"></line>
+        <line x1="0" y1="${normalBottom.toFixed(1)}" x2="${width}" y2="${normalBottom.toFixed(1)}" stroke="rgba(46,204,113,0.35)" stroke-width="1"></line>
+        <line x1="0" y1="${deadY.toFixed(1)}" x2="${width}" y2="${deadY.toFixed(1)}" stroke="rgba(231,76,60,0.72)" stroke-width="1.5" stroke-dasharray="4 3"></line>
+        ${upLine ? `<polyline points="${upLine}" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ''}
+        ${downLine ? `<polyline points="${downLine}" fill="none" stroke="var(--surface3)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></polyline>` : ''}
+        ${buildOpticalCircles(points, 'up', width, height, 'var(--accent)')}
+        ${buildOpticalCircles(points, 'down', width, height, 'var(--surface3)')}
+        <text x="8" y="${(normalTop - 3).toFixed(1)}" fill="rgba(255,255,255,0.50)" font-size="9">-8</text>
+        <text x="8" y="${(normalBottom + 10).toFixed(1)}" fill="rgba(255,255,255,0.50)" font-size="9">-12</text>
+      </svg>
+      <div class="optical-legend">
+        <div class="optical-legend-lines">
+          <span class="optical-legend-item"><span class="optical-line-dot optical-line-up"></span>상향</span>
+          <span class="optical-legend-item"><span class="optical-line-dot optical-line-down"></span>하향</span>
+          <span>정상 -12~-8 dBm</span>
+          <span style="color:var(--ng);">-50 DEAD</span>
+        </div>
+        <span>${firstLabel}${firstLabel && lastLabel && firstLabel !== lastLabel ? ' ~ ' + lastLabel : ''}</span>
+      </div>`;
+    }
+
+    function renderOpticalDeadBadges(trend) {
+      const deadDirections = trend.deadDirections || [];
+      if (!deadDirections.length) return `<span class="optical-dead-empty"></span>`;
+
+      // v3.6.5 변경: 최신 U/D 수치 대신 죽은 방향과 최초 날짜를 위아래로 표시합니다.
+      return deadDirections.map(item =>
+        `<span class="optical-dead-badge">${item.label} DEAD ${item.shortDate || ''}</span>`
+      ).join('');
+    }
+
+    function getOpticalLocations(trends) {
+      return [...new Set((trends || []).map(trend => trend.location).filter(Boolean))];
+    }
+
+    function ensureOpticalLocationSelection(trends) {
+      const locations = getOpticalLocations(trends);
+      selectedOpticalLocations = selectedOpticalLocations.filter(location => locations.includes(location));
+      // v3.6.1 변경: 모든 장소를 한 번에 펼치지 않고 첫 장소만 기본 선택합니다.
+      if (!selectedOpticalLocations.length && locations.length) selectedOpticalLocations = [locations[0]];
+      return locations;
+    }
+
+    function toggleOpticalLocation(location) {
+      // v3.6.2 변경: 여러 장소 선택에서 한 번에 한 장소만 선택하는 방식으로 바꿨습니다.
+      selectedOpticalLocations = [location];
+      renderDashboard();
+    }
+
+    function renderOpticalLocationFilter(locations) {
+      if (!locations.length) return '';
+      return `<div class="optical-filter-row">` + locations.map(location => {
+        const active = selectedOpticalLocations.includes(location);
+        return `<button class="optical-filter-chip ${active ? 'active' : ''}" type="button"
+          title="${escapeAttr(location)}" onclick="toggleOpticalLocation('${escapeAttr(location)}')">${location}</button>`;
+      }).join('') + `</div>`;
+    }
+
+    function renderDashboard() {
+      if (!dashData) return;
+      const d = dashData;
+      let html = '';
+
+      // 요약 카드
+      html += `<div class="dash-sec-label">요약</div>`;
+      html += `
+    <div class="dash-card">
+      <div><div class="dash-card-title">점검 횟수</div><div class="dash-card-sub">완료된 점검 건수</div></div>
+      <div style="display:flex;align-items:center;">
+        <div class="dash-num blue">${d.inspectCount || 0}</div>
+        <span style="font-size:16px;color:transparent;margin-left:6px;">›</span>
+      </div>
+    </div>`;
+
+      // X 항목
+      html += `
+    <div class="dash-card clickable ng-left${ngOpen ? ' is-open' : ''}" onclick="toggleNg()">
+      <div><div class="dash-card-title">X 항목 수</div><div class="dash-card-sub">${ngOpen ? '탭하여 접기' : '탭하여 목록 확인'}</div></div>
+      <div style="display:flex;align-items:center;">
+        <div class="dash-num red">${d.ngCount || 0}</div>
+        <span class="dash-arrow${ngOpen ? ' rotated' : ''}" style="color:var(--ng)">›</span>
+      </div>
+    </div>`;
+      if (ngOpen) {
+        html += `<div class="dash-list">`;
+        const ngItems = d.ngItems || [];
+        if (!ngItems.length) { html += `<div class="dash-empty">X 항목이 없습니다 🎉</div>`; }
+        else ngItems.forEach(item => {
+          html += `<div class="dash-list-item"><div>
+        <div class="dash-list-name">[${item.equipment}] ${item.checkItem}</div>
+        <div class="dash-list-sub">${item.location} · ${formatDate(item.date)} · ${item.inspector}</div>
+      </div><span class="dash-badge dash-badge-ng">✕</span></div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 특이사항
+      html += `
+    <div class="dash-card clickable warn-left${memoOpen ? ' is-open' : ''}" onclick="toggleMemo()">
+      <div><div class="dash-card-title">특이사항 수</div><div class="dash-card-sub">${memoOpen ? '탭하여 접기' : '탭하여 목록 확인'}</div></div>
+      <div style="display:flex;align-items:center;">
+        <div class="dash-num warn">${d.memoCount || 0}</div>
+        <span class="dash-arrow${memoOpen ? ' rotated' : ''}" style="color:var(--warn)">›</span>
+      </div>
+    </div>`;
+      if (memoOpen) {
+        html += `<div class="dash-list">`;
+        const memoItems = d.memoItems || [];
+        if (!memoItems.length) { html += `<div class="dash-empty">특이사항이 없습니다</div>`; }
+        else memoItems.forEach(item => {
+          html += `<div class="dash-list-item"><div>
+        <div class="dash-list-name">[${item.equipment}] ${item.checkItem}</div>
+        <div class="dash-list-sub">${item.location} · ${formatDate(item.date)} · ${item.inspector}</div>
+        ${item.memo ? `<div style="font-size:11px;color:var(--warn);margin-top:3px;">📝 ${item.memo}</div>` : ''}
+      </div></div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 장소별 X율 바 차트
+      html += `<div class="dash-divider"></div><div class="dash-sec-label">장소별 X율</div>`;
+      const locStats = d.locStats || [];
+      if (!locStats.length) {
+        html += `<div class="dash-empty">데이터가 없습니다</div>`;
+      } else {
+        const maxRate = locStats[0]?.rate || 1;
+        const repeats = d.repeats || [];
+        locStats.forEach(loc => {
+          const barW = maxRate > 0 ? (loc.rate / maxRate * 100).toFixed(0) : 0;
+          const cls = loc.rate >= 10 ? 'high' : loc.rate >= 5 ? 'mid' : loc.rate > 0 ? 'low' : 'zero';
+          const warn = repeats.some(r => r.location === loc.location) ? '⚠️' : '';
+          html += `<div class="bar-row">
+        <div class="bar-loc" title="${loc.location}">${loc.location}</div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${barW}%"></div></div>
+        <div class="bar-pct">${loc.rate}%</div>
+        <div class="bar-icon">${warn}</div>
+      </div>`;
+        });
+      }
+
+      // 광 신호 측정 추이
+      // v3.6.1 변경: 그래프 위치를 장소별 X율 아래로 이동하고, 장소 필터로 스크롤 낭비를 줄입니다.
+      html += `<div class="dash-divider"></div><div class="dash-sec-label">광 신호 추이</div>`;
+      const opticalTrends = d.opticalTrends || [];
+      const opticalLocations = ensureOpticalLocationSelection(opticalTrends);
+      if (!opticalTrends.length) {
+        html += `<div class="dash-empty">선택 기간 내 광 신호 측정값이 없습니다</div>`;
+      } else {
+        html += renderOpticalLocationFilter(opticalLocations);
+        const visibleTrends = opticalTrends.filter(trend => selectedOpticalLocations.includes(trend.location));
+        if (!visibleTrends.length) {
+          html += `<div class="dash-empty">선택된 장소가 없습니다</div>`;
+        } else {
+          visibleTrends.forEach(trend => {
+            // v3.6.3 변경: 광 FDF처럼 포트가 있는 장비는 포트명까지 제목에 표시합니다.
+            const titleParts = [trend.location, trend.equipment, trend.portName].filter(Boolean);
+            const title = titleParts.join(' · ');
+            const trendStateClass = trend.dead ? 'dead' : (trend.warning ? 'warn' : '');
+            html += `<div class="optical-trend-card ${trendStateClass}">
+        <div class="optical-trend-head">
+          <div>
+            <div class="optical-trend-title">${title}</div>
+            <div class="optical-trend-sub">${trend.points.length}회 측정</div>
+          </div>
+          <div class="optical-latest">
+            ${renderOpticalDeadBadges(trend)}
+          </div>
+        </div>
+        ${renderOpticalChart(trend.points || [])}
+      </div>`;
+          });
+        }
+      }
+
+      // 반복 불량
+      const repeats = d.repeats || [];
+      if (repeats.length) {
+        html += `<div class="dash-divider"></div><div class="dash-sec-label">⚠️ 반복 불량</div>
+    <div class="repeat-box"><div class="repeat-title">같은 항목 2회 이상 X</div>`;
+        repeats.forEach(r => {
+          html += `<div class="repeat-item">
+        <div><div class="repeat-name">[${r.equipment || r.eq || ''}] ${r.checkItem || r.item || ''}</div><div class="repeat-loc">${r.location}</div></div>
+        <div class="repeat-cnt">${r.count}회</div>
+      </div>`;
+        });
+        html += `</div>`;
+      }
+
+      // 미점검 장소
+      const unchecked = d.unchecked || [];
+      if (unchecked.length) {
+        html += `<div class="dash-divider"></div><div class="dash-sec-label">📭 미점검 장소</div>
+    <div class="unchecked-box"><div class="unchecked-title">선택 기간 내 점검 기록 없음</div>`;
+        unchecked.forEach(loc => {
+          html += `<div class="unchecked-item"><div class="unchecked-dot"></div>${loc}</div>`;
+        });
+        html += `</div>`;
+      }
+
+      html += `<div style="height:16px;"></div>`;
+      document.getElementById('dashboard-body').innerHTML = html;
+    }
+
+    function toggleNg() { ngOpen = !ngOpen; renderDashboard(); }
+    function toggleMemo() { memoOpen = !memoOpen; renderDashboard(); }
+  </script>
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
